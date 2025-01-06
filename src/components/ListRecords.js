@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Table, Button, Modal, Form } from 'react-bootstrap';
+import Loader from "../Image/Fidget-spinner.gif";
 
 const ListRecords = () => {
-  const [users, setUsers] = useState([]);
+  const [records, setRecords] = useState([]);
+  // const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -33,7 +35,7 @@ const ListRecords = () => {
           throw new Error("No authentication token found.");
         }
 
-        const response = await axios.get("https://node-firebase-7qjp.onrender.com/DNR", {
+        const response = await axios.get("https://node-application-36uh.onrender.com/DNR", {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -42,7 +44,7 @@ const ListRecords = () => {
         });
 
         if (response.status === 200) {
-          setUsers(response.data);
+          setRecords(response.data);
           console.log(response.data);
         } else {
           setError(`Unexpected response code: ${response.status}`);
@@ -69,9 +71,9 @@ const ListRecords = () => {
         withCredentials: true,
       });
       // Update the state to remove the deleted user
-      setUsers((prevUsers) => ({
-        ...prevUsers,
-        users: prevUsers.users.filter(user => user.id !== uid),
+      setRecords((prevRecords) => ({
+        ...prevRecords,
+        records: prevRecords.records.filter(record => record.id !== uid),
       }));
     } catch (err) {
       console.error("Error deleting user:", err);
@@ -80,60 +82,74 @@ const ListRecords = () => {
   };
 
   // Function to open the edit modal
-  const handleEdit = (user) => {
-    setCurrentUser(user);
-    setUpdatedAddress(user.Address);
-    setUpdatedCity(user.City);
-    setUpdatedNFC(user.NFC);
-    setUpdatedName(user.Name);
-    setUpdatedPhoneNo(user["Phone No."]);
-    setUpdatedState(user.State);
-    setUpdatedZipcode(user.zipcode);
+  const handleEdit = (record) => {
+    setCurrentUser(record);
+    setUpdatedAddress(record.Address);
+    setUpdatedCity(record.City);
+    setUpdatedNFC(record.NFC);
+    setUpdatedName(record.Name);
+    setUpdatedPhoneNo(record.Phone_No);
+    setUpdatedState(record.State);
+    setUpdatedZipcode(record.zipcode);
     setShowEditModal(true);
   };
 
-  // Function to update user
-  const updateUser = async (id) => {
+  // Function to update record
+  const updateRecord = async (id) => {
     try {
       const token = localStorage.getItem("idToken");
-      const updatedUser = {
+      if (!token) {
+        throw new Error("Authentication token is missing.");
+      }
+
+      const updatedRecord = {
         Address: updatedAddress,
         City: updatedCity,
         NFC: updatedNFC,
         Name: updatedName,
-        ["Phone No."]: updatedPhoneNo,
+        Phone_No: updatedPhoneNo, // Changed back to "Phone No."
         State: updatedState,
         zipcode: updatedZipcode,
       };
 
-      await axios.put(`https://node-firebase-7qjp.onrender.com/DNR/${id}`, updatedUser, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        withCredentials: true,
-      });
+      // Send the PUT request to the backend
+      const response = await axios.put(
+        `https://node-application-36uh.onrender.com/DNR/${id}`,
+        updatedRecord,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
 
-      // Update the user in the state
-      setUsers((prevUsers) => ({
-        ...prevUsers,
-        users: prevUsers.users.map(user => (user.id === id ? { ...user, ...updatedUser } : user)),
-      }));
-      setShowEditModal(false);
-      console.log("User updated successfully");
+      if (response.status === 200 || response.status === 204) {
+        // Update the record in the state
+        setRecords((prevRecords) => ({
+          ...prevRecords,
+          records: prevRecords.records.map((record) =>
+            record.id === id ? { ...record, ...updatedRecord } : record
+          ),
+        }));
+
+        setShowEditModal(false); // Close the edit modal
+        console.log("Record updated successfully");
+      } else {
+        throw new Error(`Unexpected response code: ${response.status}`);
+      }
     } catch (err) {
-      console.error("Error updating user:", err);
-      setError("Failed to update user");
+      console.error("Error updating record:", err);
+      setError(err.response?.data?.message || "Failed to update record");
     }
   };
 
-  // Function to handle update action
   const handleUpdate = () => {
     if (currentUser) {
-      updateUser(currentUser.id); // Call the updateUser function with the current user's UID
+      updateRecord(currentUser.id); // Call updateRecord with the current record's ID
     }
   };
-
   // Function to handle create user
   const createUser = async () => {
     try {
@@ -143,12 +159,12 @@ const ListRecords = () => {
         City: newCity,
         NFC: newNFC,
         Name: newName,
-        ["Phone No."]: newPhoneNo,
+        Phone_No: newPhoneNo,
         State: newState,
         zipcode: newZipcode,
       };
 
-      const response = await axios.post("https://node-firebase-7qjp.onrender.com/DNR", newUser, {
+      const response = await axios.post("https://node-application-36uh.onrender.com/DNR", newUser, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -157,9 +173,9 @@ const ListRecords = () => {
       });
 
       // Add the new user to the state
-      setUsers((prevUsers) => ({
+      setRecords((prevUsers) => ({
         ...prevUsers,
-        users: [...prevUsers.users, response.data],
+        records: [...prevUsers.records, response.data],
       }));
       setShowCreateModal(false);
       console.log("User created successfully");
@@ -169,52 +185,71 @@ const ListRecords = () => {
     }
   };
 
-  // Render loading state or error message
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p className="text-danger">{error}</p>;
+// Render loading state or error message
+if (loading) {
+  return (
+    <div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
+      <img 
+        src={Loader} 
+        alt="Loading..." 
+        style={{ width: "100px", height: "100px" }} 
+      />
+    </div>
+  );
+}
+
+if (error) {
+  return <p className="text-danger">{error}</p>;
+}
 
   return (
-    <div className="container">
-      <h2>User Records</h2>
-      <Button variant="success" onClick={() => setShowCreateModal(true)}>Create Record</Button>
-      <Table striped bordered hover className="mt-3">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Address</th>
-            <th>City</th>
-            <th>NFC</th>
-            <th>Name</th>
-            <th>Phone No.</th>
-            <th>State</th>
-            <th>zipcode</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users && users.status === "success" && (
-            <>
-              {console.log("Users:", users)} {/* Log users before mapping */}
-              {users.users.map((user) => ( // Access the users array
-                <tr key={user.id}> {/* Use 'id' as the unique key */}
-                  <td>{user.id}</td>
-                  <td>{user.Address}</td>
-                  <td>{user.City}</td>
-                  <td>{user.NFC}</td>
-                  <td>{user.Name}</td>
-                  <td>{user["Phone No."]}</td>
-                  <td>{user.State}</td>
-                  <td>{user.zipcode}</td>
-                  <td>
-                    <Button variant="primary" onClick={() => handleEdit(user)}>Edit</Button>
-                    <Button variant="danger" onClick={() => handleDelete(user.id)}>Delete</Button>
-                  </td>
-                </tr>
-              ))}
-            </>
-          )}
-        </tbody>
-      </Table>
+<div className="container">
+  <h2>User Records</h2>
+  <Button variant="success" onClick={() => setShowCreateModal(true)}>Create Record</Button>
+
+  {/* Conditional Rendering for Records */}
+  {(!records || records.records.length === 0) ? (
+    <div className="mt-4">
+      <p>No records found. Click "Create Record" to add a new Record.</p>
+    </div>
+  ) : (
+    <Table striped bordered hover className="mt-3">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Address</th>
+          <th>City</th>
+          <th>NFC</th>
+          <th>Name</th>
+          <th>Phone No</th>
+          <th>State</th>
+          <th>Zipcode</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {records.status === "success" && (
+          records.records.map((record) => (
+            <tr key={record.id}>
+              <td>{record.id}</td>
+              <td>{record.Address}</td>
+              <td>{record.City}</td>
+              <td>{record.NFC}</td>
+              <td>{record.Name}</td>
+              <td>{record.Phone_No}</td>
+              <td>{record.State}</td>
+              <td>{record.zipcode}</td>
+              <td>
+                <Button variant="primary" onClick={() => handleEdit(record)}>Edit</Button>
+                <Button variant="danger" onClick={() => handleDelete(record.id)}>Delete</Button>
+              </td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </Table>
+  )}
+{/* </div> */}
 
       {/* Edit User Modal */}
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
