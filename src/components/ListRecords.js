@@ -241,8 +241,8 @@ if (error) {
               <td>{record.zipcode}</td>
               <td>
                 <Button variant="primary" onClick={() => handleEdit(record)}>Edit</Button>
-                {!loading ?<Button variant="danger" onClick={() => handleDelete(record.id)}>Delete</Button>
-                : <span>Loading. deleting in progress...</span>}
+                <Button variant="danger" onClick={() => handleDelete(record.id)}>Delete</Button>
+                
               </td>
             </tr>
           ))
@@ -340,6 +340,7 @@ if (error) {
                 type="text"
                 value={newAddress}
                 onChange={(e) => setNewAddress(e.target.value)}
+                required
               />
             </Form.Group>
             <Form.Group controlId="formNewCity">
@@ -348,6 +349,7 @@ if (error) {
                 type="text"
                 value={newCity}
                 onChange={(e) => setNewCity(e.target.value)}
+                required
               />
             </Form.Group>
             <Form.Group controlId="formNewNFC">
@@ -356,6 +358,7 @@ if (error) {
                 type="text"
                 value={newNFC}
                 onChange={(e) => setNewNFC(e.target.value)}
+                required
               />
             </Form.Group>
             <Form.Group controlId="formNewName">
@@ -364,6 +367,7 @@ if (error) {
                 type="text"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
+                required
               />
             </Form.Group>
             <Form.Group controlId="formNewPhoneNo">
@@ -372,6 +376,7 @@ if (error) {
                 type="text"
                 value={newPhoneNo}
                 onChange={(e) => setNewPhoneNo(e.target.value)}
+                required
               />
             </Form.Group>
             <Form.Group controlId="formNewState">
@@ -380,6 +385,7 @@ if (error) {
                 type="text"
                 value={newState}
                 onChange={(e) => setNewState(e.target.value)}
+                required
               />
             </Form.Group>
             <Form.Group controlId="formNewZipcode">
@@ -388,6 +394,7 @@ if (error) {
                 type="text"
                 value={newZipcode}
                 onChange={(e) => setNewZipcode(e.target.value)}
+                required
               />
             </Form.Group>
           </Form>
