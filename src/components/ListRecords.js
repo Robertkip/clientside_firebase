@@ -80,7 +80,7 @@ const ListRecords = () => {
       setError("Failed to delete record");
     }
   };
-
+  
   // Function to open the edit modal
   const handleEdit = (record) => {
     setCurrentUser(record);
@@ -241,7 +241,8 @@ if (error) {
               <td>{record.zipcode}</td>
               <td>
                 <Button variant="primary" onClick={() => handleEdit(record)}>Edit</Button>
-                <Button variant="danger" onClick={() => handleDelete(record.id)}>Delete</Button>
+                {!loading ?<Button variant="danger" onClick={() => handleDelete(record.id)}>Delete</Button>
+                : <span>Loading. deleting in progress...</span>}
               </td>
             </tr>
           ))
