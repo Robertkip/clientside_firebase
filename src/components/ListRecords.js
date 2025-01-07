@@ -75,9 +75,12 @@ const ListRecords = () => {
         ...prevRecords,
         records: prevRecords.records.filter(record => record.id !== uid),
       }));
+      console.log("Record deleted successfully");
     } catch (err) {
       console.error("Error deleting user:", err);
       setError("Failed to delete record");
+    } finally {
+      setLoading(false); // Reset loading state
     }
   };
   
@@ -178,10 +181,10 @@ const ListRecords = () => {
         records: [...prevUsers.records, response.data],
       }));
       setShowCreateModal(false);
-      console.log("User created successfully");
+      console.log("Record created successfully");
     } catch (err) {
-      console.error("Error creating user:", err);
-      setError("Failed to create user");
+      console.error("Error creating Record:", err);
+      setError("Failed to create Record");
     }
   };
 
@@ -241,8 +244,15 @@ if (error) {
               <td>{record.zipcode}</td>
               <td>
                 <Button variant="primary" onClick={() => handleEdit(record)}>Edit</Button>
-                <Button variant="danger" onClick={() => handleDelete(record.id)}>Delete</Button>
-                
+                {/* <Button variant="danger" onClick={() => handleDelete(record.id)}>Delete</Button> */}
+                <Button
+              variant="danger"
+              onClick={() => handleDelete(record.id)}
+              disabled={loading} // Disable delete button while loading
+            >
+              {loading ? "Deleting..." : "Delete"} {/* Show loading message while deleting */}
+            </Button>
+
               </td>
             </tr>
           ))
@@ -340,7 +350,7 @@ if (error) {
                 type="text"
                 value={newAddress}
                 onChange={(e) => setNewAddress(e.target.value)}
-                required
+                required="true"
               />
             </Form.Group>
             <Form.Group controlId="formNewCity">
@@ -349,7 +359,7 @@ if (error) {
                 type="text"
                 value={newCity}
                 onChange={(e) => setNewCity(e.target.value)}
-                required
+                required="true"
               />
             </Form.Group>
             <Form.Group controlId="formNewNFC">
@@ -358,7 +368,7 @@ if (error) {
                 type="text"
                 value={newNFC}
                 onChange={(e) => setNewNFC(e.target.value)}
-                required
+                required="true"
               />
             </Form.Group>
             <Form.Group controlId="formNewName">
@@ -367,7 +377,7 @@ if (error) {
                 type="text"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                required
+                required="true"
               />
             </Form.Group>
             <Form.Group controlId="formNewPhoneNo">
@@ -376,7 +386,7 @@ if (error) {
                 type="text"
                 value={newPhoneNo}
                 onChange={(e) => setNewPhoneNo(e.target.value)}
-                required
+                required="true"
               />
             </Form.Group>
             <Form.Group controlId="formNewState">
@@ -385,7 +395,7 @@ if (error) {
                 type="text"
                 value={newState}
                 onChange={(e) => setNewState(e.target.value)}
-                required
+                required="true"
               />
             </Form.Group>
             <Form.Group controlId="formNewZipcode">
@@ -394,7 +404,7 @@ if (error) {
                 type="text"
                 value={newZipcode}
                 onChange={(e) => setNewZipcode(e.target.value)}
-                required
+                required="true"
               />
             </Form.Group>
           </Form>
