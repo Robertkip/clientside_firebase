@@ -77,7 +77,7 @@ const ListRecords = () => {
       }));
     } catch (err) {
       console.error("Error deleting user:", err);
-      setError("Failed to delete user");
+      setError("Failed to delete record");
     }
   };
 
@@ -254,7 +254,7 @@ if (error) {
       {/* Edit User Modal */}
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Edit User</Modal.Title>
+          <Modal.Title>Edit Record</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
@@ -329,7 +329,7 @@ if (error) {
       {/* Create User Modal */}
       <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Create User</Modal.Title>
+          <Modal.Title>Create Record</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
@@ -396,7 +396,7 @@ if (error) {
             Close
           </Button>
           <Button variant="primary" onClick={createUser}>
-            Create User
+            Create Record
           </Button>
         </Modal.Footer>
       </Modal>

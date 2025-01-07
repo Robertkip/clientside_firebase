@@ -32,7 +32,7 @@ export default function Login() {
       localStorage.setItem("idToken", idToken);
 
       // Redirect to the home page or another route
-      history.push("/");
+      history.push("/list");
     } catch (error) {
       console.error("Error logging in:", error);
       setError("Failed to log in");
@@ -66,7 +66,7 @@ export default function Login() {
         </Card.Body>
       </Card>
       <div className="w-100 text-center mt-2">
-        Need an account? <Link to="/signup">Sign Up</Link>
+        {/* Need an account? <Link to="/signup">Sign Up</Link> */}
       </div>
     </>
   );
