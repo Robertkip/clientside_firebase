@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Table, Button, Modal, Form } from 'react-bootstrap';
 import Loader from "../Image/Fidget-spinner.gif";
+import Deleter from "../Image/Spinning arrows.gif";
 
 const ListRecords = () => {
   const [records, setRecords] = useState([]);
@@ -25,6 +26,7 @@ const ListRecords = () => {
   const [newPhoneNo, setNewPhoneNo] = useState('');
   const [newState, setNewState] = useState('');
   const [newZipcode, setNewZipcode] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   // Fetch user records from the API
   useEffect(() => {
@@ -61,6 +63,7 @@ const ListRecords = () => {
 
   // Function to handle delete action
   const handleDelete = async (uid) => {
+    setDeleting(true);
     try {
       const token = localStorage.getItem("idToken");
       await axios.delete(`https://node-firebase-7qjp.onrender.com/DNR/${uid}`, {
@@ -80,6 +83,7 @@ const ListRecords = () => {
       console.error("Error deleting user:", err);
       setError("Failed to delete record");
     } finally {
+      setDeleting(false);
       setLoading(false); // Reset loading state
     }
   };
@@ -248,9 +252,16 @@ if (error) {
                 <Button
               variant="danger"
               onClick={() => handleDelete(record.id)}
-              disabled={loading} // Disable delete button while loading
+              disabled={deleting} // Disable delete button while loading
             >
-              {loading ? "Deleting..." : "Delete"} {/* Show loading message while deleting */}
+        
+              {deleting ?
+                    <img 
+                    src={Deleter} 
+                    alt="Loading..." 
+                    style={{ width: "100px", height: "100px" }} 
+                  />
+              : "Delete"} {/* Show loading message while deleting */}
             </Button>
 
               </td>
