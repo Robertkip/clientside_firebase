@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, Button, Modal, Form } from 'react-bootstrap';
+import { Table, Button, Modal, Form, InputGroup, FormControl } from 'react-bootstrap';
 import Loader from "../Image/Fidget-spinner.gif";
 import Deleter from "../Image/Spinning arrows.gif";
 
 const ListRecords = () => {
   const [records, setRecords] = useState([]);
-  // const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -27,6 +26,8 @@ const ListRecords = () => {
   const [newState, setNewState] = useState('');
   const [newZipcode, setNewZipcode] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(''); // State for search term
 
   // Fetch user records from the API
   useEffect(() => {
@@ -87,7 +88,7 @@ const ListRecords = () => {
       setLoading(false); // Reset loading state
     }
   };
-  
+
   // Function to open the edit modal
   const handleEdit = (record) => {
     setCurrentUser(record);
@@ -157,8 +158,10 @@ const ListRecords = () => {
       updateRecord(currentUser.id); // Call updateRecord with the current record's ID
     }
   };
+
   // Function to handle create user
   const createUser = async () => {
+    setCreating(true);
     try {
       const token = localStorage.getItem("idToken");
       const newUser = {
@@ -189,89 +192,96 @@ const ListRecords = () => {
     } catch (err) {
       console.error("Error creating Record:", err);
       setError("Failed to create Record");
+    } finally {
+      setCreating(false);
+      setLoading(false); // Reset loading state
     }
   };
 
-// Render loading state or error message
-if (loading) {
+  // Filter records based on search term
+  const filteredRecords = records.records
+    ? records.records.filter((record) =>
+        record.Name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : [];
+
+  // Render loading state or error message
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
+        <img src={Loader} alt="Loading..." style={{ width: "100px", height: "100px" }} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <p className="text-danger">{error}</p>;
+  }
+
   return (
-    <div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
-      <img 
-        src={Loader} 
-        alt="Loading..." 
-        style={{ width: "100px", height: "100px" }} 
-      />
-    </div>
-  );
-}
+    <div className="container">
+      <h2>User Records</h2>
+      <Button variant="success" onClick={() => setShowCreateModal(true)}>Create Record</Button>
 
-if (error) {
-  return <p className="text-danger">{error}</p>;
-}
+      {/* Search Input */}
+      <InputGroup className="mt-3 mb-3">
+        <FormControl
+          placeholder="Search by Name"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </InputGroup>
 
-  return (
-<div className="container">
-  <h2>User Records</h2>
-  <Button variant="success" onClick={() => setShowCreateModal(true)}>Create Record</Button>
-
-  {/* Conditional Rendering for Records */}
-  {(!records || records.records.length === 0) ? (
-    <div className="mt-4">
-      <p>No records found. Click "Create Record" to add a new Record.</p>
-    </div>
-  ) : (
-    <Table striped bordered hover className="mt-3">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Address</th>
-          <th>City</th>
-          <th>NFC</th>
-          <th>Name</th>
-          <th>Phone No</th>
-          <th>State</th>
-          <th>Zipcode</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {records.status === "success" && (
-          records.records.map((record) => (
-            <tr key={record.id}>
-              <td>{record.id}</td>
-              <td>{record.Address}</td>
-              <td>{record.City}</td>
-              <td>{record.NFC}</td>
-              <td>{record.Name}</td>
-              <td>{record.Phone_No}</td>
-              <td>{record.State}</td>
-              <td>{record.zipcode}</td>
-              <td>
-                <Button variant="primary" onClick={() => handleEdit(record)}>Edit</Button>
-                {/* <Button variant="danger" onClick={() => handleDelete(record.id)}>Delete</Button> */}
-                <Button
-              variant="danger"
-              onClick={() => handleDelete(record.id)}
-              disabled={deleting} // Disable delete button while loading
-            >
-        
-              {deleting ?
-                    <img 
-                    src={Deleter} 
-                    alt="Loading..." 
-                    style={{ width: "100px", height: "100px" }} 
-                  />
-              : "Delete"} {/* Show loading message while deleting */}
-            </Button>
-
-              </td>
+      {/* Conditional Rendering for Records */}
+      {filteredRecords.length === 0 ? (
+  <div className="mt-4">
+    <p>No records available.</p> {/* Display "No records available" if no records match the search term */}
+  </div>
+      ) : (
+        <Table striped bordered hover className="mt-3">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Address</th>
+              <th>City</th>
+              <th>NFC</th>
+              <th>Name</th>
+              <th>Phone No</th>
+              <th>State</th>
+              <th>Zipcode</th>
+              <th>Action</th>
             </tr>
-          ))
-        )}
-      </tbody>
-    </Table>
-  )}
-{/* </div> */}
+          </thead>
+          <tbody>
+            {filteredRecords.map((record) => (
+              <tr key={record.id}>
+                <td>{record.id}</td>
+                <td>{record.Address}</td>
+                <td>{record.City}</td>
+                <td>{record.NFC}</td>
+                <td>{record.Name}</td>
+                <td>{record.Phone_No}</td>
+                <td>{record.State}</td>
+                <td>{record.zipcode}</td>
+                <td>
+                  <Button variant="primary" onClick={() => handleEdit(record)}>Edit</Button>
+                  <Button
+                    variant="danger"
+                    onClick={() => handleDelete(record.id)}
+                    disabled={deleting}
+                  >
+                    {deleting ? (
+                      <img src={Deleter} alt="Loading..." style={{ width: "20px", height: "20px" }} />
+                    ) : (
+                      "Delete"
+                    )}
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      )}
 
       {/* Edit User Modal */}
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
@@ -425,6 +435,11 @@ if (error) {
             Close
           </Button>
           <Button variant="primary" onClick={createUser}>
+          {creating ? (
+                      <img src={Deleter} alt="Loading..." style={{ width: "20px", height: "20px" }} />
+                    ) : (
+                      "create"
+                    )}
             Create Record
           </Button>
         </Modal.Footer>
