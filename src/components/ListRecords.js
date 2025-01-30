@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, Button, Modal, Form, InputGroup, FormControl } from 'react-bootstrap';
+import { Table, Button, Modal, Form } from 'react-bootstrap';
 import Loader from "../Image/Fidget-spinner.gif";
 import Deleter from "../Image/Spinning arrows.gif";
 
+const apiUrl = "https://node-application-36uh.onrender.com/search";
+
 const ListRecords = () => {
-  const [records, setRecords] = useState([]);
+  const [records, setRecords] = useState({ records: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -27,7 +29,9 @@ const ListRecords = () => {
   const [newZipcode, setNewZipcode] = useState('');
   const [deleting, setDeleting] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [searchTerm, setSearchTerm] = useState(''); // State for search term
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Fetch user records from the API
   useEffect(() => {
@@ -48,7 +52,6 @@ const ListRecords = () => {
 
         if (response.status === 200) {
           setRecords(response.data);
-          console.log(response.data);
         } else {
           setError(`Unexpected response code: ${response.status}`);
         }
@@ -62,6 +65,52 @@ const ListRecords = () => {
     fetchUsers();
   }, []);
 
+  // Handle search functionality
+  useEffect(() => {
+    // Set a timeout to delay the search
+    const delayDebounceFn = setTimeout(() => {
+      const fetchSearchResults = async () => {
+        if (!searchQuery.trim()) {
+          setSearchResults([]);
+          setIsSearching(false);
+          return;
+        }
+  
+        setIsSearching(true);
+  
+        try {
+          const token = localStorage.getItem("idToken");
+          if (!token) {
+            throw new Error("No authentication token found.");
+          }
+  
+          const response = await axios.get(
+            `${apiUrl}?query=${encodeURIComponent(searchQuery)}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+              withCredentials: true,
+            }
+          );
+  
+          setSearchResults(response.data.records);
+        } catch (error) {
+          console.error("Error fetching search results:", error.message);
+          setSearchResults([]);
+        } finally {
+          setIsSearching(false);
+        }
+      };
+  
+      fetchSearchResults();
+    }, 2000); // 500ms delay
+  
+    // Cleanup the timeout on component unmount or when searchQuery changes
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]); // Dependency array
+
   // Function to handle delete action
   const handleDelete = async (uid) => {
     setDeleting(true);
@@ -74,7 +123,7 @@ const ListRecords = () => {
         },
         withCredentials: true,
       });
-      // Update the state to remove the deleted user
+
       setRecords((prevRecords) => ({
         ...prevRecords,
         records: prevRecords.records.filter(record => record.id !== uid),
@@ -85,7 +134,6 @@ const ListRecords = () => {
       setError("Failed to delete record");
     } finally {
       setDeleting(false);
-      setLoading(false); // Reset loading state
     }
   };
 
@@ -115,12 +163,11 @@ const ListRecords = () => {
         City: updatedCity,
         NFC: updatedNFC,
         Name: updatedName,
-        Phone_No: updatedPhoneNo, // Changed back to "Phone No."
+        Phone_No: updatedPhoneNo,
         State: updatedState,
         zipcode: updatedZipcode,
       };
 
-      // Send the PUT request to the backend
       const response = await axios.put(
         `https://node-application-36uh.onrender.com/DNR/${id}`,
         updatedRecord,
@@ -134,7 +181,6 @@ const ListRecords = () => {
       );
 
       if (response.status === 200 || response.status === 204) {
-        // Update the record in the state
         setRecords((prevRecords) => ({
           ...prevRecords,
           records: prevRecords.records.map((record) =>
@@ -142,7 +188,7 @@ const ListRecords = () => {
           ),
         }));
 
-        setShowEditModal(false); // Close the edit modal
+        setShowEditModal(false);
         console.log("Record updated successfully");
       } else {
         throw new Error(`Unexpected response code: ${response.status}`);
@@ -155,7 +201,7 @@ const ListRecords = () => {
 
   const handleUpdate = () => {
     if (currentUser) {
-      updateRecord(currentUser.id); // Call updateRecord with the current record's ID
+      updateRecord(currentUser.id);
     }
   };
 
@@ -182,7 +228,6 @@ const ListRecords = () => {
         withCredentials: true,
       });
 
-      // Add the new user to the state
       setRecords((prevUsers) => ({
         ...prevUsers,
         records: [...prevUsers.records, response.data],
@@ -194,16 +239,8 @@ const ListRecords = () => {
       setError("Failed to create Record");
     } finally {
       setCreating(false);
-      setLoading(false); // Reset loading state
     }
   };
-
-  // Filter records based on search term
-  const filteredRecords = records.records
-    ? records.records.filter((record) =>
-        record.Name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : [];
 
   // Render loading state or error message
   if (loading) {
@@ -221,39 +258,72 @@ const ListRecords = () => {
   return (
     <div className="container">
       <h2>User Records</h2>
-      <Button variant="success" onClick={() => setShowCreateModal(true)}>Create Record</Button>
+      <Button variant="success" onClick={() => setShowCreateModal(true)}>Create Record</Button><br></br>
 
       {/* Search Input */}
-      <InputGroup className="mt-3 mb-3">
-        <FormControl
-          placeholder="Search by Name"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </InputGroup>
+      <input
+        type="text"
+        placeholder="Search by any Field"
+        value={searchQuery}
+        className="form-control mb-3 mt-3 w-50"
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
 
-      {/* Conditional Rendering for Records */}
-      {filteredRecords.length === 0 ? (
-  <div className="mt-4">
-    <p>No records available.</p> {/* Display "No records available" if no records match the search term */}
-  </div>
-      ) : (
-        <Table striped bordered hover className="mt-3">
-          <thead>
+      {/* Results Table */}
+      <Table striped bordered hover className="mt-4 table-responsive w-100">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Address</th>
+            <th>City</th>
+            <th>NFC</th>
+            <th>Name</th>
+            <th>Phone No</th>
+            <th>State</th>
+            <th>Zipcode</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {isSearching ? (
             <tr>
-              <th>ID</th>
-              <th>Address</th>
-              <th>City</th>
-              <th>NFC</th>
-              <th>Name</th>
-              <th>Phone No</th>
-              <th>State</th>
-              <th>Zipcode</th>
-              <th>Action</th>
+              <td colSpan="9" className="text-center text-info">Searching...</td>
             </tr>
-          </thead>
-          <tbody>
-            {filteredRecords.map((record) => (
+          ) : searchQuery ? (
+            searchResults.length > 0 ? (
+              searchResults.map((record) => (
+                <tr key={record.id}>
+                  <td>{record.id}</td>
+                  <td>{record.Address}</td>
+                  <td>{record.City}</td>
+                  <td>{record.NFC}</td>
+                  <td>{record.Name}</td>
+                  <td>{record.Phone_No}</td>
+                  <td>{record.State}</td>
+                  <td>{record.zipcode}</td>
+                  <td>
+                    <Button variant="primary" onClick={() => handleEdit(record)}>Edit</Button>{" "}
+                    <Button
+                      variant="danger"
+                      onClick={() => handleDelete(record.id)}
+                      disabled={deleting}
+                    >
+                      {deleting ? (
+                        <img src={Deleter} alt="Loading..." style={{ width: "20px", height: "20px" }} />
+                      ) : (
+                        "Delete"
+                      )}
+                    </Button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="9" className="text-center text-danger">No records match.</td>
+              </tr>
+            )
+          ) : (
+            records.records.map((record) => (
               <tr key={record.id}>
                 <td>{record.id}</td>
                 <td>{record.Address}</td>
@@ -264,7 +334,7 @@ const ListRecords = () => {
                 <td>{record.State}</td>
                 <td>{record.zipcode}</td>
                 <td>
-                  <Button variant="primary" onClick={() => handleEdit(record)}>Edit</Button>
+                  <Button variant="primary" onClick={() => handleEdit(record)}>Edit</Button>{" "}
                   <Button
                     variant="danger"
                     onClick={() => handleDelete(record.id)}
@@ -278,10 +348,10 @@ const ListRecords = () => {
                   </Button>
                 </td>
               </tr>
-            ))}
-          </tbody>
-        </Table>
-      )}
+            ))
+          )}
+        </tbody>
+      </Table>
 
       {/* Edit User Modal */}
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
@@ -339,7 +409,7 @@ const ListRecords = () => {
               />
             </Form.Group>
             <Form.Group controlId="formzipcode">
-              <Form.Label>zipcode</Form.Label>
+              <Form.Label>Zipcode</Form.Label>
               <Form.Control
                 type="text"
                 value={updatedZipcode}
@@ -371,7 +441,7 @@ const ListRecords = () => {
                 type="text"
                 value={newAddress}
                 onChange={(e) => setNewAddress(e.target.value)}
-                required="true"
+                required
               />
             </Form.Group>
             <Form.Group controlId="formNewCity">
@@ -380,7 +450,7 @@ const ListRecords = () => {
                 type="text"
                 value={newCity}
                 onChange={(e) => setNewCity(e.target.value)}
-                required="true"
+                required
               />
             </Form.Group>
             <Form.Group controlId="formNewNFC">
@@ -389,7 +459,7 @@ const ListRecords = () => {
                 type="text"
                 value={newNFC}
                 onChange={(e) => setNewNFC(e.target.value)}
-                required="true"
+                required
               />
             </Form.Group>
             <Form.Group controlId="formNewName">
@@ -398,7 +468,7 @@ const ListRecords = () => {
                 type="text"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                required="true"
+                required
               />
             </Form.Group>
             <Form.Group controlId="formNewPhoneNo">
@@ -407,7 +477,7 @@ const ListRecords = () => {
                 type="text"
                 value={newPhoneNo}
                 onChange={(e) => setNewPhoneNo(e.target.value)}
-                required="true"
+                required
               />
             </Form.Group>
             <Form.Group controlId="formNewState">
@@ -416,16 +486,16 @@ const ListRecords = () => {
                 type="text"
                 value={newState}
                 onChange={(e) => setNewState(e.target.value)}
-                required="true"
+                required
               />
             </Form.Group>
             <Form.Group controlId="formNewZipcode">
-              <Form.Label>zipcode</Form.Label>
+              <Form.Label>Zipcode</Form.Label>
               <Form.Control
                 type="text"
                 value={newZipcode}
                 onChange={(e) => setNewZipcode(e.target.value)}
-                required="true"
+                required
               />
             </Form.Group>
           </Form>
@@ -435,12 +505,11 @@ const ListRecords = () => {
             Close
           </Button>
           <Button variant="primary" onClick={createUser}>
-          {creating ? (
-                      <img src={Deleter} alt="Loading..." style={{ width: "20px", height: "20px" }} />
-                    ) : (
-                      "create"
-                    )}
-            Create Record
+            {creating ? (
+              <img src={Deleter} alt="Loading..." style={{ width: "20px", height: "20px" }} />
+            ) : (
+              "Create Record"
+            )}
           </Button>
         </Modal.Footer>
       </Modal>
