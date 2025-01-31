@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Table, Button, Modal, Form } from 'react-bootstrap';
 import Loader from "../Image/Fidget-spinner.gif";
 import Deleter from "../Image/Spinning arrows.gif";
+import "../index.css";
 
 const apiUrl = "https://node-application-36uh.onrender.com/search";
 
@@ -265,12 +266,12 @@ const ListRecords = () => {
         type="text"
         placeholder="Search by any Field"
         value={searchQuery}
-        className="form-control mb-3 mt-3 w-50"
+        className="form-control mb-3 mt-3 w-25"
         onChange={(e) => setSearchQuery(e.target.value)}
       />
 
       {/* Results Table */}
-      <Table striped bordered hover className="mt-4 table-responsive w-100">
+      <Table className="mt-4 table-responsive">
         <thead>
           <tr>
             <th>ID</th>
@@ -293,7 +294,7 @@ const ListRecords = () => {
             searchResults.length > 0 ? (
               searchResults.map((record) => (
                 <tr key={record.id}>
-                  <td>{record.id}</td>
+                  <td style={{ border: '1px solid #dee2e6'}}> {record.id}</td>
                   <td>{record.Address}</td>
                   <td>{record.City}</td>
                   <td>{record.NFC}</td>

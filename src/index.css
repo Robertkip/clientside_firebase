@@ -1,0 +1,7 @@
+/* In your CSS file */
+.table-responsive th {
+    border: 1px solid #dee2e6;
+  }
+.table-responsive td {
+    border: 1px solid #dee2e6;
+}
