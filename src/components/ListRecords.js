@@ -33,6 +33,7 @@ const ListRecords = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isTouched, setIsTouched] = useState(false);
 
   // Fetch user records from the API
   useEffect(() => {
@@ -67,12 +68,10 @@ const ListRecords = () => {
   }, []);
 
   // Handle search functionality
-  useEffect(() => {
-    // Set a timeout to delay the search
-    const delayDebounceFn = setTimeout(() => {
       const fetchSearchResults = async () => {
         if (!searchQuery.trim()) {
           setSearchResults([]);
+          setIsTouched(true);
           setIsSearching(false);
           return;
         }
@@ -105,12 +104,6 @@ const ListRecords = () => {
         }
       };
   
-      fetchSearchResults();
-    }, 2000); // 500ms delay
-  
-    // Cleanup the timeout on component unmount or when searchQuery changes
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery]); // Dependency array
 
   // Function to handle delete action
   const handleDelete = async (uid) => {
@@ -242,6 +235,8 @@ const ListRecords = () => {
       setCreating(false);
     }
   };
+  // const Searching = false
+  const isTest = false;
 
   // Render loading state or error message
   if (loading) {
@@ -256,19 +251,36 @@ const ListRecords = () => {
     return <p className="text-danger">{error}</p>;
   }
 
+  let placeholder = isTouched && !searchQuery.trim() ? "Please enter a search term." : "Search by any field";
+
   return (
     <div className="container">
       <h2>User Records</h2>
       <Button variant="success" onClick={() => setShowCreateModal(true)}>Create Record</Button><br></br>
 
       {/* Search Input */}
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
       <input
         type="text"
-        placeholder="Search by any Field"
+        placeholder={placeholder}
         value={searchQuery}
         className="form-control mb-3 mt-3 w-25"
         onChange={(e) => setSearchQuery(e.target.value)}
+        required
       />
+          {/* {isTouched && !searchQuery.trim() && (
+      <p className="text-danger">Please enter a search term.</p>
+    )} */}
+
+      <button
+        onClick={fetchSearchResults}
+        className="btn btn-primary"
+        // disabled={isSearching || !searchQuery.trim()}
+      >
+        {isSearching ? "Searching..." : "Search"}
+      </button>
+      </div>
+
 
       {/* Results Table */}
       <Table className="mt-4 table-responsive">
@@ -286,12 +298,13 @@ const ListRecords = () => {
           </tr>
         </thead>
         <tbody>
-          {isSearching ? (
-            <tr>
-              <td colSpan="9" className="text-center text-info">Searching...</td>
-            </tr>
-          ) : searchQuery ? (
-            searchResults.length > 0 ? (
+              {error ? (
+                <tr>
+                  <td colSpan="9" className="text-center text-danger">Error fetching search results</td>
+                </tr>
+              ) : 
+            searchResults.length > 0 ? 
+            (
               searchResults.map((record) => (
                 <tr key={record.id}>
                   <td style={{ border: '1px solid #dee2e6'}}> {record.id}</td>
@@ -318,41 +331,40 @@ const ListRecords = () => {
                   </td>
                 </tr>
               ))
-            ) : (
-              <tr>
-                <td colSpan="9" className="text-center text-danger">No records match.</td>
-              </tr>
-            )
-          ) : (
-            records.records.map((record) => (
-              <tr key={record.id}>
-                <td>{record.id}</td>
-                <td>{record.Address}</td>
-                <td>{record.City}</td>
-                <td>{record.NFC}</td>
-                <td>{record.Name}</td>
-                <td>{record.Phone_No}</td>
-                <td>{record.State}</td>
-                <td>{record.zipcode}</td>
-                <td>
-                  <Button variant="primary" onClick={() => handleEdit(record)}>Edit</Button>{" "}
-                  <Button
-                    variant="danger"
-                    onClick={() => handleDelete(record.id)}
-                    disabled={deleting}
-                  >
-                    {deleting ? (
-                      <img src={Deleter} alt="Loading..." style={{ width: "20px", height: "20px" }} />
-                    ) : (
-                      "Delete"
-                    )}
-                  </Button>
-                </td>
-              </tr>
+            ) 
+            : ((
+              records.records.map((record) => (
+                <tr key={record.id}>
+                  <td>{record.id}</td>
+                  <td>{record.Address}</td>
+                  <td>{record.City}</td>
+                  <td>{record.NFC}</td>
+                  <td>{record.Name}</td>
+                  <td>{record.Phone_No}</td>
+                  <td>{record.State}</td>
+                  <td>{record.zipcode}</td>
+                  <td>
+                    <Button variant="primary" onClick={() => handleEdit(record)}>Edit</Button>{" "}
+                    <Button
+                      variant="danger"
+                      onClick={() => handleDelete(record.id)}
+                      disabled={deleting}
+                    >
+                      {deleting ? (
+                        <img src={Deleter} alt="Loading..." style={{ width: "20px", height: "20px" }} />
+                      ) : (
+                        "Delete"
+                      )}
+                    </Button>
+                  </td>
+                </tr>
+              ))
             ))
-          )}
+          }
         </tbody>
       </Table>
+
+
 
       {/* Edit User Modal */}
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
