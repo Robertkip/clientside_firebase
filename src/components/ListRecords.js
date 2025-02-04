@@ -34,8 +34,13 @@ const ListRecords = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isTouched, setIsTouched] = useState(false);
-
+  const [isNoRecordsFound, setIsNoRecordsFound] = useState(false);
+  const [hasBeenSearched, sethasBeenSearched] = useState(false);
   // Fetch user records from the API
+
+  const reloadPage = () => {
+    window.location.reload()
+  }
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -69,6 +74,7 @@ const ListRecords = () => {
 
   // Handle search functionality
       const fetchSearchResults = async () => {
+        sethasBeenSearched(true);
         if (!searchQuery.trim()) {
           setSearchResults([]);
           setIsTouched(true);
@@ -77,6 +83,7 @@ const ListRecords = () => {
         }
   
         setIsSearching(true);
+        setSearchResults([]);
   
         try {
           const token = localStorage.getItem("idToken");
@@ -96,9 +103,20 @@ const ListRecords = () => {
           );
   
           setSearchResults(response.data.records);
+          console.log("Search results:", response.data.records);
+
+              // If no records are found, display a message or alert
+    if (records.length === 0) {
+      console.log("No records found for the search query:", searchQuery);
+      // Optionally, you can set a state to display a "No records found" message in the UI
+      setIsNoRecordsFound(true);
+    } else {
+      setIsNoRecordsFound(false); // Reset the "No records found" state if results are found
+    }
         } catch (error) {
           console.error("Error fetching search results:", error.message);
-          setSearchResults([]);
+          // setSearchResults([]);
+          setIsNoRecordsFound(true);
         } finally {
           setIsSearching(false);
         }
@@ -252,7 +270,6 @@ const ListRecords = () => {
   }
 
   let placeholder = isTouched && !searchQuery.trim() ? "Please enter a search term." : "Search by any field";
-
   return (
     <div className="container">
       <h2>User Records</h2>
@@ -279,90 +296,104 @@ const ListRecords = () => {
       >
         {isSearching ? "Searching..." : "Search"}
       </button>
+
+      <button onClick={reloadPage}
+      className="btn btn-secondary"
+      >Reload Page</button>
+
       </div>
 
 
-      {/* Results Table */}
-      <Table className="mt-4 table-responsive">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Address</th>
-            <th>City</th>
-            <th>NFC</th>
-            <th>Name</th>
-            <th>Phone No</th>
-            <th>State</th>
-            <th>Zipcode</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-              {error ? (
-                <tr>
-                  <td colSpan="9" className="text-center text-danger">Error fetching search results</td>
-                </tr>
-              ) : 
-            searchResults.length > 0 ? 
-            (
-              searchResults.map((record) => (
-                <tr key={record.id}>
-                  <td style={{ border: '1px solid #dee2e6'}}> {record.id}</td>
-                  <td>{record.Address}</td>
-                  <td>{record.City}</td>
-                  <td>{record.NFC}</td>
-                  <td>{record.Name}</td>
-                  <td>{record.Phone_No}</td>
-                  <td>{record.State}</td>
-                  <td>{record.zipcode}</td>
-                  <td>
-                    <Button variant="primary" onClick={() => handleEdit(record)}>Edit</Button>{" "}
-                    <Button
-                      variant="danger"
-                      onClick={() => handleDelete(record.id)}
-                      disabled={deleting}
-                    >
-                      {deleting ? (
-                        <img src={Deleter} alt="Loading..." style={{ width: "20px", height: "20px" }} />
-                      ) : (
-                        "Delete"
-                      )}
-                    </Button>
-                  </td>
-                </tr>
-              ))
-            ) 
-            : ((
-              records.records.map((record) => (
-                <tr key={record.id}>
-                  <td>{record.id}</td>
-                  <td>{record.Address}</td>
-                  <td>{record.City}</td>
-                  <td>{record.NFC}</td>
-                  <td>{record.Name}</td>
-                  <td>{record.Phone_No}</td>
-                  <td>{record.State}</td>
-                  <td>{record.zipcode}</td>
-                  <td>
-                    <Button variant="primary" onClick={() => handleEdit(record)}>Edit</Button>{" "}
-                    <Button
-                      variant="danger"
-                      onClick={() => handleDelete(record.id)}
-                      disabled={deleting}
-                    >
-                      {deleting ? (
-                        <img src={Deleter} alt="Loading..." style={{ width: "20px", height: "20px" }} />
-                      ) : (
-                        "Delete"
-                      )}
-                    </Button>
-                  </td>
-                </tr>
-              ))
-            ))
-          }
-        </tbody>
-      </Table>
+
+
+{/* Results Table */}
+<Table className="mt-4 table-responsive">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Address</th>
+      <th>City</th>
+      <th>NFC</th>
+      <th>Name</th>
+      <th>Phone No</th>
+      <th>State</th>
+      <th>Zipcode</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+  {isSearching ? ( // Display loading state
+    <tr>
+      <td colSpan="9" className="text-center">
+        <img src={Deleter} alt="Loading..." style={{ width: "50px", height: "50px" }} />
+      </td>
+    </tr>
+        ) : searchResults.length > 0 ?  // Display search results if available
+      ( // Display search results if available
+      searchResults.map((record) => (
+        <tr key={record.id}>
+          <td style={{ border: '1px solid #dee2e6' }}>{record.id}</td>
+          <td>{record.Address}</td>
+          <td>{record.City}</td>
+          <td>{record.NFC}</td>
+          <td>{record.Name}</td>
+          <td>{record.Phone_No}</td>
+          <td>{record.State}</td>
+          <td>{record.zipcode}</td>
+          <td>
+            <Button variant="primary" onClick={() => handleEdit(record)}>Edit</Button>{" "}
+            <Button
+              variant="danger"
+              onClick={() => handleDelete(record.id)}
+              disabled={deleting}
+            >
+              {deleting ? (
+                <img src={Deleter} alt="Loading..." style={{ width: "20px", height: "20px" }} />
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </td>
+        </tr>
+      ))
+    ) 
+    : records.records.length > 0 && !hasBeenSearched
+    ? ( // Fallback to displaying all records if no search results
+      records.records.map((record) => (
+        <tr key={record.id}>
+          <td>{record.id}</td>
+          <td>{record.Address}</td>
+          <td>{record.City}</td>
+          <td>{record.NFC}</td>
+          <td>{record.Name}</td>
+          <td>{record.Phone_No}</td>
+          <td>{record.State}</td>
+          <td>{record.zipcode}</td>
+          <td>
+            <Button variant="primary" onClick={() => handleEdit(record)}>Edit</Button>{" "}
+            <Button
+              variant="danger"
+              onClick={() => handleDelete(record.id)}
+              disabled={deleting}
+            >
+              {deleting ? (
+                <img src={Deleter} alt="Loading..." style={{ width: "20px", height: "20px" }} />
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </td>
+        </tr>
+      ))
+    ) 
+    : ( // Display "No records found" if no records are available
+      <tr>
+      <td colSpan="9" className="text-danger">No records found.</td>
+    </tr>
+    )}
+  </tbody>
+</Table>
+
 
 
 
