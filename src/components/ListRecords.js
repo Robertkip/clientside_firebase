@@ -299,7 +299,7 @@ const ListRecords = () => {
 
       <button onClick={reloadPage}
       className="btn btn-secondary"
-      >Reload Page</button>
+      >Reset</button>
 
       </div>
 
