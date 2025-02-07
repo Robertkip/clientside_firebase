@@ -4,10 +4,12 @@ import { Table, Button, Modal, Form } from 'react-bootstrap';
 import Loader from "../Image/Fidget-spinner.gif";
 import Deleter from "../Image/Spinning arrows.gif";
 import "../index.css";
+import { useHistory } from 'react-router-dom';
 
 const apiUrl = "https://node-application-36uh.onrender.com/search";
 
 const ListRecords = () => {
+  const history = useHistory();
   const [records, setRecords] = useState({ records: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -63,6 +65,7 @@ const ListRecords = () => {
           setError(`Unexpected response code: ${response.status}`);
         }
       } catch (err) {
+       history.push("/login");
         setError(err.response?.data?.message || "Error fetching user records");
       } finally {
         setLoading(false);
