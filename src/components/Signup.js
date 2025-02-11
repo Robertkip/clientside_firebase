@@ -12,25 +12,61 @@ export default function Signup() {
   const [loading, setLoading] = useState(false)
   const history = useHistory()
 
-  async function handleSubmit(e) {
-    e.preventDefault()
 
-    if (passwordRef.current.value !== passwordConfirmRef.current.value) {
-      return setError("Passwords do not match")
-    }
-
+  async function checkEmailExists(email) {
     try {
-      setError("")
-      setLoading(true)
-      await signup(emailRef.current.value, passwordRef.current.value)
-      history.push("/")
-    } catch {
-      setError("Failed to create an account")
-    }
+      const response = await fetch('https://node-application-36uh.onrender.com/check-email', {
+        method: 'POST', // Use POST method
+        headers: {
+          'Content-Type': 'application/json', // Set content type to JSON
+        },
+        body: JSON.stringify({ email }), // Send email in the request body
+      });
+  
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+  
+      const data = await response.json();
+      return data.exists; 
 
-    setLoading(false)
+      // Assuming the API returns { exists: true/false }
+    } catch (error) {
+      console.error('Error checking email:', error);
+      throw error; // Re-throw the error for handling in the calling function
+    }
   }
 
+  async function handleSubmit(e) {
+    e.preventDefault();
+  
+    // Check if passwords match
+    if (passwordRef.current.value !== passwordConfirmRef.current.value) {
+      setError("Passwords do not match");
+      setLoading(false); // Reset loading state if passwords don't match
+      return;
+    }
+  
+    try {
+      setError(""); // Clear any previous errors
+      setLoading(true); // Set loading state to true
+  
+      // Check if email already exists
+      const emailExists = await checkEmailExists(emailRef.current.value);
+      if (emailExists) {
+        throw new Error("Email already exists"); // Throw an error if email exists
+      }
+  
+      // Proceed with signup if email does not exist
+      await signup(emailRef.current.value, passwordRef.current.value);
+      history.push("/"); // Redirect to home page on successful signup
+    } catch (error) {
+      console.error("Signup failed:", error.message); // Log the error for debugging
+      setError(error.message || "Failed to create an account"); // Inform the user of the failure
+    } finally {
+      setLoading(false); // Ensure loading state is reset after the try-catch block
+    }
+  }
 
   return (
     <>
