@@ -3,6 +3,8 @@ import { Form, Button, Card, Alert } from "react-bootstrap"
 import { useAuth } from "../contexts/AuthContext"
 import { Link, useHistory } from "react-router-dom"
 import SweetAlert2 from 'react-sweetalert2';
+import Deleter from "../Image/Spinning arrows.gif";
+
 export default function Signup() {
   const emailRef = useRef()
   const passwordRef = useRef()
@@ -83,6 +85,7 @@ export default function Signup() {
   
   };
 
+
   return (
     <>
       <Card>
@@ -110,7 +113,11 @@ export default function Signup() {
               <Form.Label>Password Confirmation</Form.Label>
               <Form.Control type="password" ref={passwordConfirmRef} required />
             </Form.Group>
+            { loading 
+            ? <img   src={Deleter} alt="Loading..." style={{ width: "50px", height: "50px" }} />
+             : null}
             <Button disabled={loading} className="w-100" type="submit">
+         
               Sign Up
             </Button>
           </Form>
