@@ -9,6 +9,8 @@ import PrivateRoute from "./PrivateRoute"
 import ForgotPassword from "./ForgotPassword"
 import UpdateProfile from "./UpdateProfile"
 import ListRecords from "./ListRecords"
+import Firedepartment from "./Firedepartment"
+
 
 function App() {
   return (
@@ -25,6 +27,7 @@ function App() {
               <PrivateRoute path="/update-profile" component={UpdateProfile} />
               <Route path="/signup" component={Signup} />
               <Route path="/login" component={Login} />
+              {/* <Route path="/firedepartment" component={Firedepartment} /> */}
               <Route path="/forgot-password" component={ForgotPassword} />
             </Switch>
           </AuthProvider>

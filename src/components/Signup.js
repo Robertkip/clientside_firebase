@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react"
 import { Form, Button, Card, Alert } from "react-bootstrap"
 import { useAuth } from "../contexts/AuthContext"
 import { Link, useHistory } from "react-router-dom"
-
+import SweetAlert2 from 'react-sweetalert2';
 export default function Signup() {
   const emailRef = useRef()
   const passwordRef = useRef()
@@ -11,7 +11,7 @@ export default function Signup() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const history = useHistory()
-
+  const [swalProps, setSwalProps] = useState({});
 
   async function checkEmailExists(email) {
     try {
@@ -54,12 +54,19 @@ export default function Signup() {
       // Check if email already exists
       const emailExists = await checkEmailExists(emailRef.current.value);
       if (emailExists) {
-        throw new Error("Email already exists"); // Throw an error if email exists
+        // Throw an error if email exists
+        throw new Error("Email already exists"); 
       }
-  
       // Proceed with signup if email does not exist
       await signup(emailRef.current.value, passwordRef.current.value);
-      history.push("/"); // Redirect to home page on successful signup
+      //Display user that the signup was successful
+      console.log("Signup successful!" + emailRef.current.value);
+      // alert("Signup successful!");
+      handleClick(emailRef.current.value);
+      // Redirect to login page after successful signup
+      setTimeout(() => {
+        history.push("/login");
+      }, 5000);
     } catch (error) {
       console.error("Signup failed:", error.message); // Log the error for debugging
       setError(error.message || "Failed to create an account"); // Inform the user of the failure
@@ -67,12 +74,30 @@ export default function Signup() {
       setLoading(false); // Ensure loading state is reset after the try-catch block
     }
   }
+//Added function to display alert message
+  function handleClick(email){
+    setSwalProps({
+        show: true,
+        title:  'Signup successfully',
+        text: `Email:  ${email} has been successfully registered`,
+        icon: 'success',
+    }); 
+  
+  };
 
   return (
     <>
       <Card>
         <Card.Body>
           <h2 className="text-center mb-4">Sign Up</h2>
+          <div>
+            <div>
+
+              <SweetAlert2 {...swalProps}></SweetAlert2>
+            </div>
+
+            <SweetAlert2 {...swalProps} />
+          </div>
           {error && <Alert variant="danger">{error}</Alert>}
           <Form onSubmit={handleSubmit}>
             <Form.Group id="email">
