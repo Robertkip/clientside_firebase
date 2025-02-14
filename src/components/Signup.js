@@ -29,8 +29,6 @@ export default function Signup() {
   
       const data = await response.json();
       return data.exists; 
-
-      // Assuming the API returns { exists: true/false }
     } catch (error) {
       console.error('Error checking email:', error);
       throw error; // Re-throw the error for handling in the calling function
