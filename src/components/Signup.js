@@ -77,7 +77,7 @@ export default function Signup() {
     setSwalProps({
         show: true,
         title:  'Signup successfully',
-        text: `Email:  ${email} has been successfully registered`,
+        text: `Email:  ${email} Signup Successful`,
         icon: 'success',
     }); 
   
