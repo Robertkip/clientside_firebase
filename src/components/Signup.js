@@ -76,8 +76,8 @@ export default function Signup() {
   function handleClick(email){
     setSwalProps({
         show: true,
-        title:  'Signup successfully',
-        text: `Email:  ${email} Signup Successful`,
+        title:  'Signup Successful',
+        text: `Email:  ${email} has registered Successfully`,
         icon: 'success',
     }); 
   
