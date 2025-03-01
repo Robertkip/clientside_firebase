@@ -272,7 +272,7 @@ const ListRecords = () => {
     return <p className="text-danger">{error}</p>;
   }
 
-  let placeholder = isTouched && !searchQuery.trim() ? "Please enter a search term." : "Search by any field";
+  let placeholder = isTouched && !searchQuery.trim() ? "Please enter a search term." : "Search by name";
   return (
     <div className="container">
       <h2>User Records</h2>
