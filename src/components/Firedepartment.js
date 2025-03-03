@@ -96,6 +96,7 @@ const Firedepartment = () => {
     window.location.reload()
   }
   useEffect(() => {
+    setLoading(true);
     const fetchRecords = async () => {
       try {
         const token = localStorage.getItem('idToken');
@@ -311,7 +312,10 @@ const Firedepartment = () => {
 //     window.location.reload();
 //   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>
+    <td colSpan="9" className="text-center"></td>
+    <img src={Setter} alt="Loading..." style={{ width: "100px", height: "100px" }}/>
+    </div>;
   if (error) return <div>Error: {error}</div>;
 
   let placeholder = isTouched && !searchQuery.trim() ? "Please enter a search term." : "Search by name";
@@ -423,6 +427,8 @@ const Firedepartment = () => {
             </tr>
           )}
         </tbody>
+
+        
       </Table>
 
       {/* Edit User Modal */}

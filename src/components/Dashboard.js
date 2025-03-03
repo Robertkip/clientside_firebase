@@ -59,14 +59,28 @@ export default function Dashboard() {
       });
       // Optionally, you can return the response data
       console.log("Role created successfully:", response.data);
-      return response.data;
+      return response.status;
       // Return the response data or perform any other actions
     } catch (error) {
+      console.log("Error is", error.status);
       console.error("Error creating role:", error.message);
-      setError(error.message || "Error creating an admin"); // Inform the user of the failure
-      //if the role is admin then it will throw an error
-      // Handle the error (e.g., display a message to the user)
-      throw error; // Re-throw the error if needed
+      if (error.response) {
+        console.log("Error Response Is", error.response);
+        const { status, data } = error.response;
+  
+        if (status === 400) {
+          console.log(status)
+          setError(data.details || "Invalid request. Please check your input.");
+        } else if (status === 401) {
+          setError(data.details || "Unauthorized. Token expired");
+        } else if (status === 500) {
+          setError(data.details || "User is already an admin");
+        } else if (status === 409) {
+          setError(data.details || "Role already exists.");
+        }
+      } else {
+        setError(error.details || "Failed to create role.");
+      }
     }
     // Handle the error (e.g., display a message to the user)
 
@@ -107,7 +121,7 @@ export default function Dashboard() {
       <Card>
         <Card.Body>
           <h2 className="text-center mb-4">Profile</h2>
-          {error && <Alert variant="danger">{error}</Alert>}
+         
           <strong>Email:</strong> {currentUser.email}<br />
           <strong>Uid: </strong> {currentUser.uid}
           <Link to="/update-profile" className="btn btn-primary w-100 mt-3">
