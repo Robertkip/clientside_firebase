@@ -1,12 +1,12 @@
 import React, { useState  } from "react"
-import { Card, Button, Alert } from "react-bootstrap"
+import { Card, Form, Button, Alert } from "react-bootstrap"
 import { useAuth } from "../contexts/AuthContext"
 import { Link, useHistory } from "react-router-dom"
 import axios from 'axios';
 
 
 export default function Dashboard() {
-  const [records, setRecords] = useState([]);
+  // const [records, setRecords] = useState([]);
   const [error, setError] = useState("")
   const { currentUser, logout } = useAuth()
   const [role, setRole] = useState('');
@@ -38,6 +38,7 @@ export default function Dashboard() {
       if (!role || !uid) {
         throw new Error("Role or UID is missing.");
       }
+
       //check if the uid === admin already exists
       if (uid === "admin") {
         throw new Error("Admin role already exists.");
@@ -49,21 +50,20 @@ export default function Dashboard() {
       };
   
       // Send a POST request to the server
-      const response = await axios.post("http://localhost:8000/setRole", newRole, {
+      const response = await axios.post("https://node-application-36uh.onrender.com/setRole", newRole, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         withCredentials: true,
       });
-  
       // Optionally, you can return the response data
       console.log("Role created successfully:", response.data);
       return response.data;
       // Return the response data or perform any other actions
-
     } catch (error) {
       console.error("Error creating role:", error.message);
+      setError(error.message || "Error creating an admin"); // Inform the user of the failure
       //if the role is admin then it will throw an error
       // Handle the error (e.g., display a message to the user)
       throw error; // Re-throw the error if needed
@@ -75,6 +75,35 @@ export default function Dashboard() {
 
   return (
     <>
+            <Form
+          onSubmit={(e) => {
+            e.preventDefault();
+            createRole();
+          }}
+        >
+          <Form.Group controlId="formRole">
+            <Form.Label>Role</Form.Label>
+            <Form.Control
+              type="text"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              placeholder="Enter admin role"
+              required
+            />
+          </Form.Group>
+          <Form.Group controlId="formUid">
+            <Form.Label>UID</Form.Label>
+            <Form.Control
+              type="text"
+              value={uid}
+              onChange={(e) => setUid(e.target.value)}
+              placeholder="Enter your UID"
+              required
+            />
+          </Form.Group>
+          {error && <Alert variant="danger">{error}</Alert>}
+          <Button type="submit">Create Role</Button>
+        </Form>
       <Card>
         <Card.Body>
           <h2 className="text-center mb-4">Profile</h2>
