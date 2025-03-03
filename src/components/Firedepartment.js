@@ -13,50 +13,50 @@ const Firedepartment = () => {
   const [loading, setLoading] = useState(true);
   const history = useHistory();
 
-  const createRole = async () => {
-    try {
-      // Retrieve the token from localStorage
-      const token = localStorage.getItem("idToken");
+  // const createRole = async () => {
+  //   try {
+  //     // Retrieve the token from localStorage
+  //     const token = localStorage.getItem("idToken");
   
-      // Check if the token exists
-      if (!token) {
-        throw new Error("No authentication token found.");
-      }
+  //     // Check if the token exists
+  //     if (!token) {
+  //       throw new Error("No authentication token found.");
+  //     }
   
-      // Ensure `role` and `uid` are defined in the component state or passed as arguments
-      if (!role || !uid) {
-        throw new Error("Role or UID is missing.");
-      }
+  //     // Ensure `role` and `uid` are defined in the component state or passed as arguments
+  //     if (!role || !uid) {
+  //       throw new Error("Role or UID is missing.");
+  //     }
 
-      //check if the uid === admin already exists
-      if (uid === "admin") {
-        throw new Error("Admin role already exists.");
-      }
-      // Create the new role object
-      const newRole = {
-        role: role, // `role` should be defined in the component state or passed as an argument
-        uid: uid,   // `uid` should be defined in the component state or passed as an argument
-      };
+  //     //check if the uid === admin already exists
+  //     if (uid === "admin") {
+  //       throw new Error("Admin role already exists.");
+  //     }
+  //     // Create the new role object
+  //     const newRole = {
+  //       role: role, // `role` should be defined in the component state or passed as an argument
+  //       uid: uid,   // `uid` should be defined in the component state or passed as an argument
+  //     };
   
-      // Send a POST request to the server
-      const response = await axios.post("http://localhost:8000/setRole", newRole, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
-      });
-      // Optionally, you can return the response data
-      console.log("Role created successfully:", response.data);
-      return response.data;
-      // Return the response data or perform any other actions
-    } catch (error) {
-      console.log(`Error creating role: ${error.message}`);
-      setError(error.message || "Error creating an admin"); // Inform the user of the failure
-    }
-    // Handle the error (e.g., display a message to the user)
+  //     // Send a POST request to the server
+  //     const response = await axios.post("http://localhost:8000/setRole", newRole, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         "Content-Type": "application/json",
+  //       },
+  //       withCredentials: true,
+  //     });
+  //     // Optionally, you can return the response data
+  //     console.log("Role created successfully:", response.data);
+  //     return response.data;
+  //     // Return the response data or perform any other actions
+  //   } catch (error) {
+  //     console.log(`Error creating role: ${error.message}`);
+  //     setError(error.message || "Error creating an admin"); // Inform the user of the failure
+  //   }
+  //   // Handle the error (e.g., display a message to the user)
 
-  };
+  // };
 
   // State for Edit Modal
   const [showEditModal, setShowEditModal] = useState(false);
