@@ -120,6 +120,7 @@ const Firedepartment = () => {
           setError(`Unexpected response code: ${response.status}`);
         }
       } catch (err) {
+        console.log("Error fetching Response Is:", err.response);
         setError(err.response?.data?.message || err.message || 'Error fetching records');
         if (err.response?.status === 401) {
           history.push('/login'); // Redirect if unauthorized
@@ -317,7 +318,7 @@ const Firedepartment = () => {
     <td colSpan="9" className="text-center"></td>
     <img src={Setter} alt="Loading..." style={{ width: "100px", height: "100px" }}/>
     </div>; 
-  if (error) return <div>Error: {error}</div>;
+  if (error) return <div className="text-danger">{error}</div>;
 
   let placeholder = isTouched && !searchQuery.trim() ? "Please enter a search term." : "Search by name";
 
