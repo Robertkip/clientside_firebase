@@ -116,6 +116,7 @@ const Firedepartment = () => {
           setRecords(response.data);
           console.log('Records fetched:', response.data);
         } else {
+          console.log('Unexpected response code:', response.status);
           setError(`Unexpected response code: ${response.status}`);
         }
       } catch (err) {
@@ -312,10 +313,10 @@ const Firedepartment = () => {
 //     window.location.reload();
 //   };
 
-  if (loading) return <div>
+  if (loading)  return <div>
     <td colSpan="9" className="text-center"></td>
     <img src={Setter} alt="Loading..." style={{ width: "100px", height: "100px" }}/>
-    </div>;
+    </div>; 
   if (error) return <div>Error: {error}</div>;
 
   let placeholder = isTouched && !searchQuery.trim() ? "Please enter a search term." : "Search by name";
@@ -591,39 +592,6 @@ const Firedepartment = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-
-      {/* Role Creation Form */}
-       {/* <div>
-       <Form
-          onSubmit={(e) => {
-            e.preventDefault();
-            createRole();
-          }}
-        >
-          <Form.Group controlId="formRole">
-            <Form.Label>Role</Form.Label>
-            <Form.Control
-              type="text"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              placeholder="Enter role"
-              required
-            />
-          </Form.Group>
-          <Form.Group controlId="formUid">
-            <Form.Label>UID</Form.Label>
-            <Form.Control
-              type="text"
-              value={uid}
-              onChange={(e) => setUid(e.target.value)}
-              placeholder="Enter UID"
-              required
-            />
-          </Form.Group>
-          {error && <Alert variant="danger">{error}</Alert>}
-          <Button type="submit">Create Role</Button>
-        </Form>
-      </div> */}
     </div>
   );
 };
