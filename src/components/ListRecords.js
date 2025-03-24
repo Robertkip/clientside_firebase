@@ -5,6 +5,7 @@ import Loader from "../Image/Fidget-spinner.gif";
 import Deleter from "../Image/Spinning arrows.gif";
 import "../index.css";
 import { useHistory } from 'react-router-dom';
+// import FireDepartment from "./Firedepartment";
 
 const apiUrl = "https://node-application-36uh.onrender.com/search";
 
@@ -43,6 +44,16 @@ const ListRecords = () => {
   const reloadPage = () => {
     window.location.reload()
   }
+
+  const handleFireDepartmentClick = () => {
+    try {
+      history.push('/fire_department');
+    } catch (error) {
+      console.error("Navigation failed:", error);
+      // Optionally show user feedback
+    }
+  };
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -276,7 +287,15 @@ const ListRecords = () => {
   return (
     <div className="container">
       <h2>User Records</h2>
+      <div style={{ display: "flex", gap: "10px" }}>
       <Button variant="success" onClick={() => setShowCreateModal(true)}>Create Record</Button><br></br>
+      <Button
+        variant="primary"
+        onClick={handleFireDepartmentClick}
+        aria-label="Navigate to Fire Department">
+        Fire Department
+      </Button>
+      </div>
 
       {/* Search Input */}
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
