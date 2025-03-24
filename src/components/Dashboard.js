@@ -7,7 +7,7 @@ import axios from 'axios';
 
 export default function Dashboard() {
   // const [records, setRecords] = useState([]);
-  // const [error, setError] = useState("")
+  const [error, setError] = useState("")
   const { currentUser, logout } = useAuth()
   // const [role, setRole] = useState('');
   // const [uid, setUid] = useState('');
